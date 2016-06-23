@@ -163,8 +163,8 @@ public class JsonFormat {
 
 
     /**
-     * Creates a new {@link Printer} that has different printerImpl, with either
-     * ugly json. The new Printer clones all other configurations from the
+     * Creates a new {@link Printer} that has a different textGenerator, The json output will be minified.
+     * The new Printer clones all other configurations from the
      * current {@link Printer}.
      */
     public Printer setPrinterTypeUgly(){
