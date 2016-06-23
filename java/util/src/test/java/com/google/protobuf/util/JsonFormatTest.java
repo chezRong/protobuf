@@ -139,6 +139,10 @@ public class JsonFormatTest extends TestCase {
   private String toJsonString(Message message) throws IOException {
     return JsonFormat.printer().print(message);
   }
+  //test for enum UGLY, PRETTY
+  private String toUglyJsonString(Message message) throws IOException{
+    return JsonFormat.printer().setPrinterTypeUgly().print(message);
+  }
 
   private void mergeFromJson(String json, Message.Builder builder) throws IOException {
     JsonFormat.parser().merge(json, builder);
@@ -193,6 +197,50 @@ public class JsonFormatTest extends TestCase {
             + "  \"repeatedNestedEnum\": [\"BAR\", \"BAZ\"]\n"
             + "}",
         toJsonString(message));
+    assertEquals(
+            "{"
+                    + "\"optionalInt32\":1234,"
+                    + "\"optionalInt64\":\"1234567890123456789\","
+                    + "\"optionalUint32\":5678,"
+                    + "\"optionalUint64\":\"2345678901234567890\","
+                    + "\"optionalSint32\":9012,"
+                    + "\"optionalSint64\":\"3456789012345678901\","
+                    + "\"optionalFixed32\":3456,"
+                    + "\"optionalFixed64\":\"4567890123456789012\","
+                    + "\"optionalSfixed32\":7890,"
+                    + "\"optionalSfixed64\":\"5678901234567890123\","
+                    + "\"optionalFloat\":1.5,"
+                    + "\"optionalDouble\":1.25,"
+                    + "\"optionalBool\":true,"
+                    + "\"optionalString\":\"Hello world!\","
+                    + "\"optionalBytes\":\"AAEC\","
+                    + "\"optionalNestedMessage\":{"
+                    + "\"value\":100"
+                    + "},"
+                    + "\"optionalNestedEnum\":\"BAR\","
+                    + "\"repeatedInt32\":[1234,234],"
+                    + "\"repeatedInt64\":[\"1234567890123456789\",\"234567890123456789\"],"
+                    + "\"repeatedUint32\":[5678,678],"
+                    + "\"repeatedUint64\":[\"2345678901234567890\",\"345678901234567890\"],"
+                    + "\"repeatedSint32\":[9012,10],"
+                    + "\"repeatedSint64\":[\"3456789012345678901\",\"456789012345678901\"],"
+                    + "\"repeatedFixed32\":[3456,456],"
+                    + "\"repeatedFixed64\":[\"4567890123456789012\",\"567890123456789012\"],"
+                    + "\"repeatedSfixed32\":[7890,890],"
+                    + "\"repeatedSfixed64\":[\"5678901234567890123\",\"678901234567890123\"],"
+                    + "\"repeatedFloat\":[1.5,11.5],"
+                    + "\"repeatedDouble\":[1.25,11.25],"
+                    + "\"repeatedBool\":[true,true],"
+                    + "\"repeatedString\":[\"Hello world!\",\"ello world!\"],"
+                    + "\"repeatedBytes\":[\"AAEC\",\"AQI=\"],"
+                    + "\"repeatedNestedMessage\":[{"
+                    + "\"value\":100"
+                    + "},{"
+                    + "\"value\":200"
+                    + "}],"
+                    + "\"repeatedNestedEnum\":[\"BAR\",\"BAZ\"]"
+                    + "}",
+            toUglyJsonString(message));
 
     assertRoundTripEquals(message);
   }
@@ -208,6 +256,11 @@ public class JsonFormatTest extends TestCase {
         + "  \"optionalNestedEnum\": 12345,\n"
         + "  \"repeatedNestedEnum\": [12345, \"FOO\"]\n"
         + "}", toJsonString(message));
+    assertEquals(
+        "{"
+        + "\"optionalNestedEnum\":12345,"
+        + "\"repeatedNestedEnum\":[12345,\"FOO\"]"
+        + "}", toUglyJsonString(message));
     assertRoundTripEquals(message);
 
     TestMap.Builder mapBuilder = TestMap.newBuilder();
@@ -222,6 +275,14 @@ public class JsonFormatTest extends TestCase {
             + "  }\n"
             + "}",
         toJsonString(mapMessage));
+    assertEquals(
+            "{"
+            + "\"int32ToEnumMap\":{"
+            + "\"1\":\"FOO\","
+            + "\"2\":12345"
+            + "}"
+            + "}",
+            toUglyJsonString(mapMessage));
     assertRoundTripEquals(mapMessage);
   }
 
@@ -239,6 +300,11 @@ public class JsonFormatTest extends TestCase {
         + "  \"repeatedFloat\": [\"NaN\", \"Infinity\", \"-Infinity\"],\n"
         + "  \"repeatedDouble\": [\"NaN\", \"Infinity\", \"-Infinity\"]\n"
         + "}", toJsonString(message));
+    assertEquals(
+        "{"
+        + "\"repeatedFloat\":[\"NaN\",\"Infinity\",\"-Infinity\"],"
+        + "\"repeatedDouble\":[\"NaN\",\"Infinity\",\"-Infinity\"]"
+        + "}", toUglyJsonString(message));
 
     assertRoundTripEquals(message);
   }
@@ -598,6 +664,94 @@ public class JsonFormatTest extends TestCase {
         + "    \"9\": \"BAR\"\n"
         + "  }\n"
         + "}", toJsonString(message));
+    assertEquals("{"
+            + "\"int32ToInt32Map\":{"
+            + "\"1\":10"
+            + "},"
+            + "\"int64ToInt32Map\":{"
+            + "\"1234567890123456789\":10"
+            + "},"
+            + "\"uint32ToInt32Map\":{"
+            + "\"2\":20"
+            + "},"
+            + "\"uint64ToInt32Map\":{"
+            + "\"2234567890123456789\":20"
+            + "},"
+            + "\"sint32ToInt32Map\":{"
+            + "\"3\":30"
+            + "},"
+            + "\"sint64ToInt32Map\":{"
+            + "\"3234567890123456789\":30"
+            + "},"
+            + "\"fixed32ToInt32Map\":{"
+            + "\"4\":40"
+            + "},"
+            + "\"fixed64ToInt32Map\":{"
+            + "\"4234567890123456789\":40"
+            + "},"
+            + "\"sfixed32ToInt32Map\":{"
+            + "\"5\":50"
+            + "},"
+            + "\"sfixed64ToInt32Map\":{"
+            + "\"5234567890123456789\":50"
+            + "},"
+            + "\"boolToInt32Map\":{"
+            + "\"false\":6"
+            + "},"
+            + "\"stringToInt32Map\":{"
+            + "\"Hello\":10"
+            + "},"
+            + "\"int32ToInt64Map\":{"
+            + "\"1\":\"1234567890123456789\""
+            + "},"
+            + "\"int32ToUint32Map\":{"
+            + "\"2\":20"
+            + "},"
+            + "\"int32ToUint64Map\":{"
+            + "\"2\":\"2234567890123456789\""
+            + "},"
+            + "\"int32ToSint32Map\":{"
+            + "\"3\":30"
+            + "},"
+            + "\"int32ToSint64Map\":{"
+            + "\"3\":\"3234567890123456789\""
+            + "},"
+            + "\"int32ToFixed32Map\":{"
+            + "\"4\":40"
+            + "},"
+            + "\"int32ToFixed64Map\":{"
+            + "\"4\":\"4234567890123456789\""
+            + "},"
+            + "\"int32ToSfixed32Map\":{"
+            + "\"5\":50"
+            + "},"
+            + "\"int32ToSfixed64Map\":{"
+            + "\"5\":\"5234567890123456789\""
+            + "},"
+            + "\"int32ToFloatMap\":{"
+            + "\"6\":1.5"
+            + "},"
+            + "\"int32ToDoubleMap\":{"
+            + "\"6\":1.25"
+            + "},"
+            + "\"int32ToBoolMap\":{"
+            + "\"7\":false"
+            + "},"
+            + "\"int32ToStringMap\":{"
+            + "\"7\":\"World\""
+            + "},"
+            + "\"int32ToBytesMap\":{"
+            + "\"8\":\"AQID\""
+            + "},"
+            + "\"int32ToMessageMap\":{"
+            + "\"8\":{"
+            + "\"value\":1234"
+            + "}"
+            + "},"
+            + "\"int32ToEnumMap\":{"
+            + "\"9\":\"BAR\""
+            + "}"
+            + "}", toUglyJsonString(message));
     assertRoundTripEquals(message);
 
     // Test multiple entries.
@@ -653,8 +807,19 @@ public class JsonFormatTest extends TestCase {
     assertEquals(2, message.getInt32ToInt32Map().get(1).intValue());
     assertEquals(3, message.getStringToInt32Map().get("hello").intValue());
   }
+  public void testParserAcceptNonQuotedObjectKeyInUglyJson() throws Exception {
+    TestMap.Builder builderU = TestMap.newBuilder();
+    mergeFromJson(
+      "{"
+      + "int32ToInt32Map:{1:2},"
+      + "stringToInt32Map:{hello:3}"
+      + "}", builderU);
+    TestMap messageU = builderU.build();
+    assertEquals(2, messageU.getInt32ToInt32Map().get(1).intValue());
+    assertEquals(3, messageU.getStringToInt32Map().get("hello").intValue());
+  }
 
-  public void testWrappers() throws Exception {
+    public void testWrappers() throws Exception {
     TestWrappers.Builder builder = TestWrappers.newBuilder();
     builder.getBoolValueBuilder().setValue(false);
     builder.getInt32ValueBuilder().setValue(0);
@@ -679,6 +844,18 @@ public class JsonFormatTest extends TestCase {
         + "  \"stringValue\": \"\",\n"
         + "  \"bytesValue\": \"\"\n"
         + "}", toJsonString(message));
+      assertEquals(
+        "{"
+        + "\"int32Value\":0,"
+        + "\"uint32Value\":0,"
+        + "\"int64Value\":\"0\","
+        + "\"uint64Value\":\"0\","
+        + "\"floatValue\":0.0,"
+        + "\"doubleValue\":0.0,"
+        + "\"boolValue\":false,"
+        + "\"stringValue\":\"\","
+        + "\"bytesValue\":\"\""
+        + "}", toUglyJsonString(message));
     assertRoundTripEquals(message);
 
     builder = TestWrappers.newBuilder();
@@ -705,6 +882,18 @@ public class JsonFormatTest extends TestCase {
         + "  \"stringValue\": \"7\",\n"
         + "  \"bytesValue\": \"CA==\"\n"
         + "}", toJsonString(message));
+      assertEquals(
+        "{"
+        + "\"int32Value\":1,"
+        + "\"uint32Value\":3,"
+        + "\"int64Value\":\"2\","
+        + "\"uint64Value\":\"4\","
+        + "\"floatValue\":5.0,"
+        + "\"doubleValue\":6.0,"
+        + "\"boolValue\":true,"
+        + "\"stringValue\":\"7\","
+        + "\"bytesValue\":\"CA==\""
+        + "}", toUglyJsonString(message));
     assertRoundTripEquals(message);
   }
 
@@ -717,6 +906,10 @@ public class JsonFormatTest extends TestCase {
         "{\n"
         + "  \"timestampValue\": \"1970-01-01T00:00:00Z\"\n"
         + "}", toJsonString(message));
+    assertEquals(
+        "{"
+        + "\"timestampValue\":\"1970-01-01T00:00:00Z\""
+        + "}", toUglyJsonString(message));
     assertRoundTripEquals(message);
   }
 
@@ -729,6 +922,10 @@ public class JsonFormatTest extends TestCase {
         "{\n"
         + "  \"durationValue\": \"12345s\"\n"
         + "}", toJsonString(message));
+    assertEquals(
+        "{"
+        + "\"durationValue\":\"12345s\""
+        + "}", toUglyJsonString(message));
     assertRoundTripEquals(message);
   }
 
@@ -741,6 +938,10 @@ public class JsonFormatTest extends TestCase {
         "{\n"
         + "  \"fieldMaskValue\": \"foo.bar,baz\"\n"
         + "}", toJsonString(message));
+    assertEquals(
+        "{"
+        + "\"fieldMaskValue\":\"foo.bar,baz\""
+        + "}", toUglyJsonString(message));
     assertRoundTripEquals(message);
   }
 
@@ -778,6 +979,18 @@ public class JsonFormatTest extends TestCase {
         + "    \"list_value\": [1.125, null]\n"
         + "  }\n"
         + "}", toJsonString(message));
+    assertEquals(
+            "{"
+            + "\"structValue\":{"
+            + "\"null_value\":null,"
+            + "\"number_value\":1.25,"
+            + "\"string_value\":\"hello\","
+            + "\"struct_value\":{"
+            + "\"number_value\":1234.0"
+            + "},"
+            + "\"list_value\":[1.125,null]"
+            + "}"
+            + "}", toUglyJsonString(message));
     assertRoundTripEquals(message);
 
     builder = TestStruct.newBuilder();
@@ -787,6 +1000,10 @@ public class JsonFormatTest extends TestCase {
         "{\n"
         + "  \"value\": null\n"
         + "}", toJsonString(message));
+    assertEquals(
+        "{"
+        + "\"value\":null"
+        + "}", toUglyJsonString(message));
     assertRoundTripEquals(message);
 
     builder = TestStruct.newBuilder();
@@ -798,6 +1015,10 @@ public class JsonFormatTest extends TestCase {
         "{\n"
         + "  \"listValue\": [31831.125, null]\n"
         + "}", toJsonString(message));
+    assertEquals(
+        "{"
+        + "\"listValue\":[31831.125,null]"
+        + "}", toUglyJsonString(message));
     assertRoundTripEquals(message);
   }
 
@@ -1035,6 +1256,7 @@ public class JsonFormatTest extends TestCase {
   public void testCustomJsonName() throws Exception {
     TestCustomJsonName message = TestCustomJsonName.newBuilder().setValue(12345).build();
     assertEquals("{\n" + "  \"@value\": 12345\n" + "}", JsonFormat.printer().print(message));
+    assertEquals("{" + "\"@value\":12345" + "}", JsonFormat.printer().setPrinterTypeUgly().print(message));
     assertRoundTripEquals(message);
   }
 
@@ -1042,11 +1264,15 @@ public class JsonFormatTest extends TestCase {
     TestAllTypes message = TestAllTypes.newBuilder().setOptionalString("=").build();
     assertEquals(
         "{\n" + "  \"optionalString\": \"=\"" + "\n}", JsonFormat.printer().print(message));
+    assertEquals(
+            "{" + "\"optionalString\":\"=\"" + "}", JsonFormat.printer().setPrinterTypeUgly().print(message));
   }
 
   public void testIncludingDefaultValueFields() throws Exception {
     TestAllTypes message = TestAllTypes.getDefaultInstance();
     assertEquals("{\n}", JsonFormat.printer().print(message));
+    assertEquals("{}", JsonFormat.printer().setPrinterTypeUgly().print(message));
+
     assertEquals(
         "{\n"
             + "  \"optionalInt32\": 0,\n"
@@ -1084,6 +1310,43 @@ public class JsonFormatTest extends TestCase {
             + "  \"repeatedNestedEnum\": []\n"
             + "}",
         JsonFormat.printer().includingDefaultValueFields().print(message));
+    assertEquals(
+            "{"
+                    + "\"optionalInt32\":0,"
+                    + "\"optionalInt64\":\"0\","
+                    + "\"optionalUint32\":0,"
+                    + "\"optionalUint64\":\"0\","
+                    + "\"optionalSint32\":0,"
+                    + "\"optionalSint64\":\"0\","
+                    + "\"optionalFixed32\":0,"
+                    + "\"optionalFixed64\":\"0\","
+                    + "\"optionalSfixed32\":0,"
+                    + "\"optionalSfixed64\":\"0\","
+                    + "\"optionalFloat\":0.0,"
+                    + "\"optionalDouble\":0.0,"
+                    + "\"optionalBool\":false,"
+                    + "\"optionalString\":\"\","
+                    + "\"optionalBytes\":\"\","
+                    + "\"optionalNestedEnum\":\"FOO\","
+                    + "\"repeatedInt32\":[],"
+                    + "\"repeatedInt64\":[],"
+                    + "\"repeatedUint32\":[],"
+                    + "\"repeatedUint64\":[],"
+                    + "\"repeatedSint32\":[],"
+                    + "\"repeatedSint64\":[],"
+                    + "\"repeatedFixed32\":[],"
+                    + "\"repeatedFixed64\":[],"
+                    + "\"repeatedSfixed32\":[],"
+                    + "\"repeatedSfixed64\":[],"
+                    + "\"repeatedFloat\":[],"
+                    + "\"repeatedDouble\":[],"
+                    + "\"repeatedBool\":[],"
+                    + "\"repeatedString\":[],"
+                    + "\"repeatedBytes\":[],"
+                    + "\"repeatedNestedMessage\":[],"
+                    + "\"repeatedNestedEnum\":[]"
+                    + "}",
+            JsonFormat.printer().includingDefaultValueFields().setPrinterTypeUgly().print(message));
 
     TestMap mapMessage = TestMap.getDefaultInstance();
     assertEquals("{\n}", JsonFormat.printer().print(mapMessage));
@@ -1147,6 +1410,66 @@ public class JsonFormatTest extends TestCase {
             + "  }\n"
             + "}",
         JsonFormat.printer().includingDefaultValueFields().print(mapMessage));
+    assertEquals(
+            "{"
+                    + "\"int32ToInt32Map\":{"
+                    + "},"
+                    + "\"int64ToInt32Map\":{"
+                    + "},"
+                    + "\"uint32ToInt32Map\":{"
+                    + "},"
+                    + "\"uint64ToInt32Map\":{"
+                    + "},"
+                    + "\"sint32ToInt32Map\":{"
+                    + "},"
+                    + "\"sint64ToInt32Map\":{"
+                    + "},"
+                    + "\"fixed32ToInt32Map\":{"
+                    + "},"
+                    + "\"fixed64ToInt32Map\":{"
+                    + "},"
+                    + "\"sfixed32ToInt32Map\":{"
+                    + "},"
+                    + "\"sfixed64ToInt32Map\":{"
+                    + "},"
+                    + "\"boolToInt32Map\":{"
+                    + "},"
+                    + "\"stringToInt32Map\":{"
+                    + "},"
+                    + "\"int32ToInt64Map\":{"
+                    + "},"
+                    + "\"int32ToUint32Map\":{"
+                    + "},"
+                    + "\"int32ToUint64Map\":{"
+                    + "},"
+                    + "\"int32ToSint32Map\":{"
+                    + "},"
+                    + "\"int32ToSint64Map\":{"
+                    + "},"
+                    + "\"int32ToFixed32Map\":{"
+                    + "},"
+                    + "\"int32ToFixed64Map\":{"
+                    + "},"
+                    + "\"int32ToSfixed32Map\":{"
+                    + "},"
+                    + "\"int32ToSfixed64Map\":{"
+                    + "},"
+                    + "\"int32ToFloatMap\":{"
+                    + "},"
+                    + "\"int32ToDoubleMap\":{"
+                    + "},"
+                    + "\"int32ToBoolMap\":{"
+                    + "},"
+                    + "\"int32ToStringMap\":{"
+                    + "},"
+                    + "\"int32ToBytesMap\":{"
+                    + "},"
+                    + "\"int32ToMessageMap\":{"
+                    + "},"
+                    + "\"int32ToEnumMap\":{"
+                    + "}"
+                    + "}",
+            JsonFormat.printer().includingDefaultValueFields().setPrinterTypeUgly().print(mapMessage));
   }
 
   public void testPreservingProtoFieldNames() throws Exception {
@@ -1155,14 +1478,18 @@ public class JsonFormatTest extends TestCase {
     assertEquals(
         "{\n" + "  \"optional_int32\": 12345\n" + "}",
         JsonFormat.printer().preservingProtoFieldNames().print(message));
-
+    assertEquals(
+            "{" + "\"optional_int32\":12345" + "}",
+            JsonFormat.printer().preservingProtoFieldNames().setPrinterTypeUgly().print(message));
     // The json_name field option is ignored when configured to use original proto field names.
     TestCustomJsonName messageWithCustomJsonName =
         TestCustomJsonName.newBuilder().setValue(12345).build();
     assertEquals(
         "{\n" + "  \"value\": 12345\n" + "}",
         JsonFormat.printer().preservingProtoFieldNames().print(messageWithCustomJsonName));
-
+    assertEquals(
+            "{" + "\"value\":12345" + "}",
+            JsonFormat.printer().preservingProtoFieldNames().setPrinterTypeUgly().print(messageWithCustomJsonName));
     // Parsers accept both original proto field names and lowerCamelCase names.
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     JsonFormat.parser().merge("{\"optionalInt32\": 12345}", builder);
