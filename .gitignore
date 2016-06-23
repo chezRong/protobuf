@@ -80,6 +80,10 @@ src/**/*.trs
 java/target
 javanano/target
 
+#intellij
+.idea/
+*.iml
+
 # Windows native output.
 cmake/build
 build_msvc
