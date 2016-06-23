@@ -98,12 +98,14 @@ public class JsonFormat {
   private JsonFormat() {}
   
   /**
-   * Creates a {@link Printer} with default configurations.
+   * Creates a {@link Printer} with default configurations. Default printing option is Pretty
    */
   public static Printer printer() {
-    return new Printer(TypeRegistry.getEmptyTypeRegistry(), false, false);
+    return new Printer(TypeRegistry.getEmptyTypeRegistry(), false, false, false);
   }
-  
+
+
+
   /**
    * A Printer converts protobuf message to JSON format.
    */
@@ -111,14 +113,19 @@ public class JsonFormat {
     private final TypeRegistry registry;
     private final boolean includingDefaultValueFields;
     private final boolean preservingProtoFieldNames;
+    //variable to determine whether the output is minified
+    private final boolean minified;
+
+
 
     private Printer(
         TypeRegistry registry,
         boolean includingDefaultValueFields,
-        boolean preservingProtoFieldNames) {
+        boolean preservingProtoFieldNames, boolean minified) {
       this.registry = registry;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
+      this.minified = minified;
     }
     
     /**
@@ -131,7 +138,7 @@ public class JsonFormat {
       if (this.registry != TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one registry is allowed.");
       }
-      return new Printer(registry, includingDefaultValueFields, preservingProtoFieldNames);
+      return new Printer(registry, includingDefaultValueFields, preservingProtoFieldNames, minified);
     }
 
     /**
@@ -141,7 +148,7 @@ public class JsonFormat {
      * {@link Printer}.
      */
     public Printer includingDefaultValueFields() {
-      return new Printer(registry, true, preservingProtoFieldNames);
+      return new Printer(registry, true, preservingProtoFieldNames, minified);
     }
 
     /**
@@ -151,7 +158,17 @@ public class JsonFormat {
      * current {@link Printer}.
      */
     public Printer preservingProtoFieldNames() {
-      return new Printer(registry, includingDefaultValueFields, true);
+      return new Printer(registry, includingDefaultValueFields, true, minified);
+    }
+
+
+    /**
+     * Creates a new {@link Printer} that has different printerImpl, with either
+     * ugly json. The new Printer clones all other configurations from the
+     * current {@link Printer}.
+     */
+    public Printer setPrinterTypeUgly(){
+      return new Printer(registry, includingDefaultValueFields, preservingProtoFieldNames, true);
     }
     
     /**
@@ -165,9 +182,10 @@ public class JsonFormat {
         throws IOException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new PrinterImpl(registry, includingDefaultValueFields, preservingProtoFieldNames, output)
+      new PrinterImpl(registry, includingDefaultValueFields, preservingProtoFieldNames, output, minified)
           .print(message);
     }
+
 
     /**
      * Converts a protobuf message to JSON format. Throws exceptions if there
@@ -360,14 +378,55 @@ public class JsonFormat {
   }
 
   /**
+   * An interface for json formatting that can be used in
+   * combination with the printerType enum
+   */
+  interface TextGenerator {
+    void indent();
+    void outdent();
+    void print(final CharSequence text) throws IOException;
+  }
+
+
+  /**
+   * Format the json without indentation
+   */
+  private static final class UglyTextGenerator implements TextGenerator{
+    private final Appendable output;
+
+
+    private UglyTextGenerator(final Appendable output) {
+      this.output = output;
+    }
+
+    /**
+     * ignored by ugly printer
+     */
+    public void indent() {}
+
+    /**
+     * ignored by ugly printer
+     */
+    public void outdent() {}
+
+    /**
+     * Print text to the output stream.
+     */
+    public void print(final CharSequence text) throws IOException {
+      output.append(text);
+    }
+
+  }
+  /**
    * A TextGenerator adds indentation when writing formatted text.
    */
-  private static final class TextGenerator {
+  private static final class PrettyTextGenerator implements TextGenerator{
     private final Appendable output;
     private final StringBuilder indent = new StringBuilder();
     private boolean atStartOfLine = true;
 
-    private TextGenerator(final Appendable output) {
+
+    private PrettyTextGenerator(final Appendable output) {
       this.output = output;
     }
 
@@ -432,6 +491,8 @@ public class JsonFormat {
     private final TextGenerator generator;
     // We use Gson to help handle string escapes.
     private final Gson gson;
+    private final CharSequence nullOrSpace;
+    private final CharSequence nullOrNewLine;
 
     private static class GsonHolder {
       private static final Gson DEFAULT_GSON = new GsonBuilder().disableHtmlEscaping().create();
@@ -441,12 +502,21 @@ public class JsonFormat {
         TypeRegistry registry,
         boolean includingDefaultValueFields,
         boolean preservingProtoFieldNames,
-        Appendable jsonOutput) {
+        Appendable jsonOutput, boolean minified) {
       this.registry = registry;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
-      this.generator = new TextGenerator(jsonOutput);
       this.gson = GsonHolder.DEFAULT_GSON;
+      //json format related properties, determined by printerType
+      if (minified) {
+        this.generator = new UglyTextGenerator(jsonOutput);
+        this.nullOrSpace = "";
+        this.nullOrNewLine = "";
+      } else {
+          this.generator = new PrettyTextGenerator(jsonOutput);
+          this.nullOrSpace = " ";
+          this.nullOrNewLine = "\n";
+      }
     }
 
     void print(MessageOrBuilder message) throws IOException {
@@ -581,12 +651,12 @@ public class JsonFormat {
       if (printer != null) {
         // If the type is one of the well-known types, we use a special
         // formatting.
-        generator.print("{\n");
+        generator.print("{" + nullOrNewLine);
         generator.indent();
-        generator.print("\"@type\": " + gson.toJson(typeUrl) + ",\n");
-        generator.print("\"value\": ");
+        generator.print("\"@type\":" + nullOrSpace + gson.toJson(typeUrl) + "," + nullOrNewLine);
+        generator.print("\"value\":" + nullOrSpace);
         printer.print(this, contentMessage);
-        generator.print("\n");
+        generator.print("" + nullOrNewLine);
         generator.outdent();
         generator.print("}");
       } else {
@@ -677,12 +747,12 @@ public class JsonFormat {
     /** Prints a regular message with an optional type URL. */
     private void print(MessageOrBuilder message, String typeUrl)
         throws IOException {
-      generator.print("{\n");
+      generator.print("{" + nullOrNewLine);
       generator.indent();
 
       boolean printedField = false;
       if (typeUrl != null) {
-        generator.print("\"@type\": " + gson.toJson(typeUrl));
+        generator.print("\"@type\":" + nullOrSpace + gson.toJson(typeUrl));
         printedField = true;
       }
       Map<FieldDescriptor, Object> fieldsToPrint = null;
@@ -704,7 +774,7 @@ public class JsonFormat {
       for (Map.Entry<FieldDescriptor, Object> field : fieldsToPrint.entrySet()) {
         if (printedField) {
           // Add line-endings for the previous field.
-          generator.print(",\n");
+          generator.print("," + nullOrNewLine);
         } else {
           printedField = true;
         }
@@ -713,7 +783,7 @@ public class JsonFormat {
       
       // Add line-endings for the last field.
       if (printedField) {
-        generator.print("\n");
+        generator.print("" + nullOrNewLine);
       }
       generator.outdent();
       generator.print("}");
@@ -722,9 +792,9 @@ public class JsonFormat {
     private void printField(FieldDescriptor field, Object value)
         throws IOException {
       if (preservingProtoFieldNames) {
-        generator.print("\"" + field.getName() + "\": ");
+        generator.print("\"" + field.getName() + "\":" + nullOrSpace);
       } else {
-        generator.print("\"" + field.getJsonName() + "\": ");
+        generator.print("\"" + field.getJsonName() + "\":" + nullOrSpace);
       }
       if (field.isMapField()) {
         printMapFieldValue(field, value);
@@ -742,7 +812,7 @@ public class JsonFormat {
       boolean printedElement = false;
       for (Object element : (List) value) {
         if (printedElement) {
-          generator.print(", ");
+          generator.print("," + nullOrSpace);
         } else {
           printedElement = true;
         }
@@ -760,7 +830,7 @@ public class JsonFormat {
       if (keyField == null || valueField == null) {
         throw new InvalidProtocolBufferException("Invalid map field.");
       }
-      generator.print("{\n");
+      generator.print("{" + nullOrNewLine);
       generator.indent();
       boolean printedElement = false;
       for (Object element : (List) value) {
@@ -768,17 +838,17 @@ public class JsonFormat {
         Object entryKey = entry.getField(keyField);
         Object entryValue = entry.getField(valueField);
         if (printedElement) {
-          generator.print(",\n");
+          generator.print("," + nullOrNewLine);
         } else {
           printedElement = true;
         }
         // Key fields are always double-quoted.
         printSingleFieldValue(keyField, entryKey, true);
-        generator.print(": ");
+        generator.print(":" + nullOrSpace);
         printSingleFieldValue(valueField, entryValue);
       }
       if (printedElement) {
-        generator.print("\n");
+        generator.print("" + nullOrNewLine);
       }
       generator.outdent();
       generator.print("}");
