@@ -141,7 +141,7 @@ public class JsonFormatTest extends TestCase {
   }
   //test for enum UGLY, PRETTY
   private String toUglyJsonString(Message message) throws IOException{
-    return JsonFormat.printer().setPrinterTypeUgly().print(message);
+    return JsonFormat.printer().minifyingJSONOutput().print(message);
   }
 
   private void mergeFromJson(String json, Message.Builder builder) throws IOException {
@@ -1256,7 +1256,7 @@ public class JsonFormatTest extends TestCase {
   public void testCustomJsonName() throws Exception {
     TestCustomJsonName message = TestCustomJsonName.newBuilder().setValue(12345).build();
     assertEquals("{\n" + "  \"@value\": 12345\n" + "}", JsonFormat.printer().print(message));
-    assertEquals("{" + "\"@value\":12345" + "}", JsonFormat.printer().setPrinterTypeUgly().print(message));
+    assertEquals("{" + "\"@value\":12345" + "}", JsonFormat.printer().minifyingJSONOutput().print(message));
     assertRoundTripEquals(message);
   }
 
@@ -1265,13 +1265,13 @@ public class JsonFormatTest extends TestCase {
     assertEquals(
         "{\n" + "  \"optionalString\": \"=\"" + "\n}", JsonFormat.printer().print(message));
     assertEquals(
-            "{" + "\"optionalString\":\"=\"" + "}", JsonFormat.printer().setPrinterTypeUgly().print(message));
+            "{" + "\"optionalString\":\"=\"" + "}", JsonFormat.printer().minifyingJSONOutput().print(message));
   }
 
   public void testIncludingDefaultValueFields() throws Exception {
     TestAllTypes message = TestAllTypes.getDefaultInstance();
     assertEquals("{\n}", JsonFormat.printer().print(message));
-    assertEquals("{}", JsonFormat.printer().setPrinterTypeUgly().print(message));
+    assertEquals("{}", JsonFormat.printer().minifyingJSONOutput().print(message));
 
     assertEquals(
         "{\n"
@@ -1346,7 +1346,7 @@ public class JsonFormatTest extends TestCase {
                     + "\"repeatedNestedMessage\":[],"
                     + "\"repeatedNestedEnum\":[]"
                     + "}",
-            JsonFormat.printer().includingDefaultValueFields().setPrinterTypeUgly().print(message));
+            JsonFormat.printer().includingDefaultValueFields().minifyingJSONOutput().print(message));
 
     TestMap mapMessage = TestMap.getDefaultInstance();
     assertEquals("{\n}", JsonFormat.printer().print(mapMessage));
@@ -1469,7 +1469,7 @@ public class JsonFormatTest extends TestCase {
                     + "\"int32ToEnumMap\":{"
                     + "}"
                     + "}",
-            JsonFormat.printer().includingDefaultValueFields().setPrinterTypeUgly().print(mapMessage));
+            JsonFormat.printer().includingDefaultValueFields().minifyingJSONOutput().print(mapMessage));
   }
 
   public void testPreservingProtoFieldNames() throws Exception {
@@ -1480,7 +1480,7 @@ public class JsonFormatTest extends TestCase {
         JsonFormat.printer().preservingProtoFieldNames().print(message));
     assertEquals(
             "{" + "\"optional_int32\":12345" + "}",
-            JsonFormat.printer().preservingProtoFieldNames().setPrinterTypeUgly().print(message));
+            JsonFormat.printer().preservingProtoFieldNames().minifyingJSONOutput().print(message));
     // The json_name field option is ignored when configured to use original proto field names.
     TestCustomJsonName messageWithCustomJsonName =
         TestCustomJsonName.newBuilder().setValue(12345).build();
@@ -1489,7 +1489,7 @@ public class JsonFormatTest extends TestCase {
         JsonFormat.printer().preservingProtoFieldNames().print(messageWithCustomJsonName));
     assertEquals(
             "{" + "\"value\":12345" + "}",
-            JsonFormat.printer().preservingProtoFieldNames().setPrinterTypeUgly().print(messageWithCustomJsonName));
+            JsonFormat.printer().preservingProtoFieldNames().minifyingJSONOutput().print(messageWithCustomJsonName));
     // Parsers accept both original proto field names and lowerCamelCase names.
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     JsonFormat.parser().merge("{\"optionalInt32\": 12345}", builder);
