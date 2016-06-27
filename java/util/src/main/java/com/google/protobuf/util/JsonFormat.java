@@ -488,8 +488,8 @@ public class JsonFormat {
     private final TextGenerator generator;
     // We use Gson to help handle string escapes.
     private final Gson gson;
-    private final CharSequence nullOrSpace;
-    private final CharSequence nullOrNewLine;
+    private final CharSequence blankOrSpace;
+    private final CharSequence blankOrNewLine;
 
     private static class GsonHolder {
       private static final Gson DEFAULT_GSON = new GsonBuilder().disableHtmlEscaping().create();
@@ -507,12 +507,12 @@ public class JsonFormat {
       // json format related properties, determined by printerType
       if (minifyingJSONOutput) {
         this.generator = new UglyTextGenerator(jsonOutput);
-        this.nullOrSpace = "";
-        this.nullOrNewLine = "";
+        this.blankOrSpace = "";
+        this.blankOrNewLine = "";
       } else {
           this.generator = new PrettyTextGenerator(jsonOutput);
-          this.nullOrSpace = " ";
-          this.nullOrNewLine = "\n";
+          this.blankOrSpace = " ";
+          this.blankOrNewLine = "\n";
       }
     }
 
@@ -648,12 +648,12 @@ public class JsonFormat {
       if (printer != null) {
         // If the type is one of the well-known types, we use a special
         // formatting.
-        generator.print("{" + nullOrNewLine);
+        generator.print("{" + blankOrNewLine);
         generator.indent();
-        generator.print("\"@type\":" + nullOrSpace + gson.toJson(typeUrl) + "," + nullOrNewLine);
-        generator.print("\"value\":" + nullOrSpace);
+        generator.print("\"@type\":" + blankOrSpace + gson.toJson(typeUrl) + "," + blankOrNewLine);
+        generator.print("\"value\":" + blankOrSpace);
         printer.print(this, contentMessage);
-        generator.print("" + nullOrNewLine);
+        generator.print("" + blankOrNewLine);
         generator.outdent();
         generator.print("}");
       } else {
@@ -744,12 +744,12 @@ public class JsonFormat {
     /** Prints a regular message with an optional type URL. */
     private void print(MessageOrBuilder message, String typeUrl)
         throws IOException {
-      generator.print("{" + nullOrNewLine);
+      generator.print("{" + blankOrNewLine);
       generator.indent();
 
       boolean printedField = false;
       if (typeUrl != null) {
-        generator.print("\"@type\":" + nullOrSpace + gson.toJson(typeUrl));
+        generator.print("\"@type\":" + blankOrSpace + gson.toJson(typeUrl));
         printedField = true;
       }
       Map<FieldDescriptor, Object> fieldsToPrint = null;
@@ -771,7 +771,7 @@ public class JsonFormat {
       for (Map.Entry<FieldDescriptor, Object> field : fieldsToPrint.entrySet()) {
         if (printedField) {
           // Add line-endings for the previous field.
-          generator.print("," + nullOrNewLine);
+          generator.print("," + blankOrNewLine);
         } else {
           printedField = true;
         }
@@ -780,7 +780,7 @@ public class JsonFormat {
 
       // Add line-endings for the last field.
       if (printedField) {
-        generator.print("" + nullOrNewLine);
+        generator.print("" + blankOrNewLine);
       }
       generator.outdent();
       generator.print("}");
@@ -789,9 +789,9 @@ public class JsonFormat {
     private void printField(FieldDescriptor field, Object value)
         throws IOException {
       if (preservingProtoFieldNames) {
-        generator.print("\"" + field.getName() + "\":" + nullOrSpace);
+        generator.print("\"" + field.getName() + "\":" + blankOrSpace);
       } else {
-        generator.print("\"" + field.getJsonName() + "\":" + nullOrSpace);
+        generator.print("\"" + field.getJsonName() + "\":" + blankOrSpace);
       }
       if (field.isMapField()) {
         printMapFieldValue(field, value);
@@ -809,7 +809,7 @@ public class JsonFormat {
       boolean printedElement = false;
       for (Object element : (List) value) {
         if (printedElement) {
-          generator.print("," + nullOrSpace);
+          generator.print("," + blankOrSpace);
         } else {
           printedElement = true;
         }
@@ -827,7 +827,7 @@ public class JsonFormat {
       if (keyField == null || valueField == null) {
         throw new InvalidProtocolBufferException("Invalid map field.");
       }
-      generator.print("{" + nullOrNewLine);
+      generator.print("{" + blankOrNewLine);
       generator.indent();
       boolean printedElement = false;
       for (Object element : (List) value) {
@@ -835,17 +835,17 @@ public class JsonFormat {
         Object entryKey = entry.getField(keyField);
         Object entryValue = entry.getField(valueField);
         if (printedElement) {
-          generator.print("," + nullOrNewLine);
+          generator.print("," + blankOrNewLine);
         } else {
           printedElement = true;
         }
         // Key fields are always double-quoted.
         printSingleFieldValue(keyField, entryKey, true);
-        generator.print(":" + nullOrSpace);
+        generator.print(":" + blankOrSpace);
         printSingleFieldValue(valueField, entryValue);
       }
       if (printedElement) {
-        generator.print("" + nullOrNewLine);
+        generator.print("" + blankOrNewLine);
       }
       generator.outdent();
       generator.print("}");
