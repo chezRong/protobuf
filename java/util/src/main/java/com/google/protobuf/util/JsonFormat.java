@@ -113,7 +113,7 @@ public class JsonFormat {
     private final TypeRegistry registry;
     private final boolean includingDefaultValueFields;
     private final boolean preservingProtoFieldNames;
-    private final boolean minifyOutput;
+    private final boolean minifyingOutput;
 
     private Printer(
         TypeRegistry registry,
@@ -122,7 +122,7 @@ public class JsonFormat {
       this.registry = registry;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
-      this.minifyOutput = minifyingOutput;
+      this.minifyingOutput = minifyingOutput;
     }
 
     /**
@@ -135,7 +135,7 @@ public class JsonFormat {
       if (this.registry != TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one registry is allowed.");
       }
-      return new Printer(registry, includingDefaultValueFields, preservingProtoFieldNames, minifyOutput);
+      return new Printer(registry, includingDefaultValueFields, preservingProtoFieldNames, minifyingOutput);
     }
 
     /**
@@ -145,7 +145,7 @@ public class JsonFormat {
      * {@link Printer}.
      */
     public Printer includingDefaultValueFields() {
-      return new Printer(registry, true, preservingProtoFieldNames, minifyOutput);
+      return new Printer(registry, true, preservingProtoFieldNames, minifyingOutput);
     }
 
     /**
@@ -155,12 +155,12 @@ public class JsonFormat {
      * current {@link Printer}.
      */
     public Printer preservingProtoFieldNames() {
-      return new Printer(registry, includingDefaultValueFields, true, minifyOutput);
+      return new Printer(registry, includingDefaultValueFields, true, minifyingOutput);
     }
 
 
     /**
-     * Creates a new {@link Printer} that has a different textGenerator, The json output will be minifyOutput.
+     * Creates a new {@link Printer} that has a different textGenerator, The json output will be minifyingOutput.
      * The new Printer clones all other configurations from the
      * current {@link Printer}.
      */
@@ -179,7 +179,7 @@ public class JsonFormat {
         throws IOException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new PrinterImpl(registry, includingDefaultValueFields, preservingProtoFieldNames, output, minifyOutput)
+      new PrinterImpl(registry, includingDefaultValueFields, preservingProtoFieldNames, output, minifyingOutput)
           .print(message);
     }
 
