@@ -113,16 +113,16 @@ public class JsonFormat {
     private final TypeRegistry registry;
     private final boolean includingDefaultValueFields;
     private final boolean preservingProtoFieldNames;
-    private final boolean minifyingJSONOutput;
+    private final boolean minifyOutput;
 
     private Printer(
         TypeRegistry registry,
         boolean includingDefaultValueFields,
-        boolean preservingProtoFieldNames, boolean minifyingJSONOutput) {
+        boolean preservingProtoFieldNames, boolean minifyingOutput) {
       this.registry = registry;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
-      this.minifyingJSONOutput = minifyingJSONOutput;
+      this.minifyOutput = minifyingOutput;
     }
 
     /**
@@ -135,7 +135,7 @@ public class JsonFormat {
       if (this.registry != TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one registry is allowed.");
       }
-      return new Printer(registry, includingDefaultValueFields, preservingProtoFieldNames, minifyingJSONOutput);
+      return new Printer(registry, includingDefaultValueFields, preservingProtoFieldNames, minifyOutput);
     }
 
     /**
@@ -145,7 +145,7 @@ public class JsonFormat {
      * {@link Printer}.
      */
     public Printer includingDefaultValueFields() {
-      return new Printer(registry, true, preservingProtoFieldNames, minifyingJSONOutput);
+      return new Printer(registry, true, preservingProtoFieldNames, minifyOutput);
     }
 
     /**
@@ -155,16 +155,16 @@ public class JsonFormat {
      * current {@link Printer}.
      */
     public Printer preservingProtoFieldNames() {
-      return new Printer(registry, includingDefaultValueFields, true, minifyingJSONOutput);
+      return new Printer(registry, includingDefaultValueFields, true, minifyOutput);
     }
 
 
     /**
-     * Creates a new {@link Printer} that has a different textGenerator, The json output will be minifyingJSONOutput.
+     * Creates a new {@link Printer} that has a different textGenerator, The json output will be minifyOutput.
      * The new Printer clones all other configurations from the
      * current {@link Printer}.
      */
-    public Printer minifyingJSONOutput(){
+    public Printer minifyingOutput(){
       return new Printer(registry, includingDefaultValueFields, preservingProtoFieldNames, true);
     }
 
@@ -179,7 +179,7 @@ public class JsonFormat {
         throws IOException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new PrinterImpl(registry, includingDefaultValueFields, preservingProtoFieldNames, output, minifyingJSONOutput)
+      new PrinterImpl(registry, includingDefaultValueFields, preservingProtoFieldNames, output, minifyOutput)
           .print(message);
     }
 
@@ -499,13 +499,13 @@ public class JsonFormat {
         TypeRegistry registry,
         boolean includingDefaultValueFields,
         boolean preservingProtoFieldNames,
-        Appendable jsonOutput, boolean minifyingJSONOutput) {
+        Appendable jsonOutput, boolean minifyingOutput) {
       this.registry = registry;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
       this.gson = GsonHolder.DEFAULT_GSON;
       // json format related properties, determined by printerType
-      if (minifyingJSONOutput) {
+      if (minifyingOutput) {
         this.generator = new UglyTextGenerator(jsonOutput);
         this.blankOrSpace = "";
         this.blankOrNewLine = "";
